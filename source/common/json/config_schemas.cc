@@ -1439,4 +1439,31 @@ const std::string Json::Schema::SDS_SCHEMA(R"EOF(
     "required" : ["hosts"]
   }
   )EOF");
+
+   const std::string Json::Schema::POLICY_ENFORCEMENT_HTTP_FILTER_SCHEMA(R"EOF(
+  {
+    "$schema": "http://json-schema.org/schema#",
+    "type" : "object",
+    "properties" : {
+      "abort": {
+        "type" : "object",
+        "properties" : {
+          "http_status" : {
+            "type" : "integer",
+            "minimum" : 0,
+            "maximum" : 599
+          },
+          "request_headers": {
+            "type" : "array",
+            "uniqueItems": true,
+            "items" : {"type" : "string"}
+          }
+        },
+        "required" : ["request_headers_for_pe", "http_status"],
+        "additionalProperties" : false
+      },
+    "additionalProperties" : false
+  }
+  )EOF");
+
 } // Envoy

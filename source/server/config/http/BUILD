@@ -122,3 +122,15 @@ envoy_cc_library(
         "//source/server:configuration_lib",
     ],
 )
+
+envoy_cc_library(
+    name = "policy_enforcement_lib",
+    srcs = ["policy_enforcement.cc"],
+    hdrs = ["policy_enforcement.h"],
+    deps = [
+         "//include/envoy/registry",
+        "//include/envoy/server:filter_config_interface",
+        "//source/common/http/filter:policy_enforcement_filter_lib",
+        "//source/common/json:config_schemas_lib",
+    ],
+)

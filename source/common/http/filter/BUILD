@@ -92,3 +92,25 @@ envoy_cc_library(
         "//source/common/json:json_validator_lib",
     ],
 )
+
+envoy_cc_library(
+    name = "policy_enforcement_filter_lib",
+    srcs = ["policy_enforcement_filter.cc"],
+    hdrs = ["policy_enforcement_filter.h"],
+    deps = [
+        "//include/envoy/http:codes_interface",
+        "//include/envoy/http:filter_interface",
+        "//include/envoy/http:header_map_interface",
+        "//include/envoy/runtime:runtime_interface",
+        "//include/envoy/stats:stats_interface",
+        "//include/envoy/stats:stats_macros",
+        "//source/common/common:assert_lib",
+        "//source/common/common:empty_string",
+        "//source/common/http:codes_lib",
+        "//source/common/http:header_map_lib",
+        "//source/common/http:headers_lib",
+        "//source/common/json:config_schemas_lib",
+        "//source/common/router:config_lib",
+    ],
+)
+
