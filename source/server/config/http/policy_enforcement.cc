@@ -4,6 +4,7 @@
 
 #include "common/http/filter/policy_enforcement_filter.h"
 #include "common/json/config_schemas.h"
+#include "server/config/network/http_connection_manager.h"
 
 namespace Envoy {
 namespace Server {
@@ -20,6 +21,9 @@ HttpFilterFactoryCb PolicyEnforcementFilterConfig::createFilterFactory(const Jso
         Http::StreamDecoderFilterSharedPtr{new Http::PolicyEnforcementFilter(config)});
   };
 }
+
+std::string name() override { return "policy_enforcement"; }
+HttpFilterType type() override { return HttpFilterType::Decoder; }
 
 /**
  * Static registration for the fault filter. @see RegisterFactory.
