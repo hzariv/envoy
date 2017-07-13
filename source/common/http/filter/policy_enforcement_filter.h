@@ -18,7 +18,7 @@ namespace Http {
  * All stats for the policy enforcement filter. @see stats_macros.h
  */
 // clang-format off
-#define ALL_PE_FILTER_STATS(COUNTER)                                                            \                                                                        \
+#define ALL_PE_FILTER_STATS(COUNTER)                                                                                                                                  \
   COUNTER(aborts_injected)
 // clang-format on
 
@@ -26,7 +26,7 @@ namespace Http {
  * Wrapper struct for connection manager stats. @see stats_macros.h
  */
 struct PolicyEnforcementFilterStats {
-  ALL_PE_FILTER_STATS(GENERATE_COUNTER_STRUCT)
+  ALL_PE_FILTER_STATS(GENERATE_COUNTER_STRUCT);
 };
 
 /**
@@ -35,7 +35,7 @@ struct PolicyEnforcementFilterStats {
 class PolicyEnforcementFilterConfig {
 public:
   PolicyEnforcementFilterConfig(const Json::Object& json_config, Runtime::Loader& runtime,
-                    const std::string& stat_prefix, Stats::Store& stats);
+                    const std::string& stat_prefix, Stats::Scope& stats);
 
   const std::vector<Router::ConfigUtility::HeaderData>& filterHeaders() {
     return pe_filter_headers_;
@@ -45,7 +45,7 @@ public:
   PolicyEnforcementFilterStats& stats() { return stats_; }
 
 private:
-  static PolicyEnforcementFilterStats generateStats(const std::string& prefix, Stats::Store& store);
+  static PolicyEnforcementFilterStats generateStats(const std::string& prefix, Stats::Scope& scope);
 
   uint64_t http_status_{};         // HTTP or gRPC return codes
   std::vector<Router::ConfigUtility::HeaderData> pe_filter_headers_;
@@ -53,14 +53,14 @@ private:
   PolicyEnforcementFilterStats stats_;
 };
 
-typedef std::shared_ptr<PolicyEnforcementFilterConfig> PolicyEnforcementFilterConfigPtr;
+typedef std::shared_ptr<PolicyEnforcementFilterConfig> PolicyEncorcementFilterConfigSharedPtr;
 
 /**
  * A filter that is capable of faulting an entire request before dispatching it upstream.
  */
 class PolicyEnforcementFilter : public StreamDecoderFilter {
 public:
-  PolicyEnforcementFilter(PolicyEnforcementFilterConfigPtr config);
+  PolicyEnforcementFilter(PolicyEncorcementFilterConfigSharedPtr config);
   ~PolicyEnforcementFilter();
 
   // Http::StreamFilterBase
@@ -76,7 +76,7 @@ private:
   void postDelayInjection();
   void abortWithHTTPStatus();
 
-  PolicyEnforcementFilterConfigPtr config_;
+    PolicyEncorcementFilterConfigSharedPtr config_;
   StreamDecoderFilterCallbacks* callbacks_{};
 };
 

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "envoy/server/instance.h"
+#include "envoy/server/filter_config.h"
 
 namespace Envoy {
 namespace Server {
@@ -16,6 +16,9 @@ public:
   HttpFilterFactoryCb createFilterFactory(const Json::Object& json_config,
                                           const std::string& stats_prefix,
                                           FactoryContext& context) override;
+
+std::string name() override { return "policy_enforcement"; }
+HttpFilterType type() override { return HttpFilterType::Decoder; }
   
 };
 

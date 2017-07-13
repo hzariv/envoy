@@ -22,10 +22,9 @@ namespace Envoy {
 namespace Http {
 
 PolicyEnforcementFilterConfig::PolicyEnforcementFilterConfig(const Json::Object& json_config, Runtime::Loader& runtime,
-                                     const std::string& stat_prefix, Stats::Store& stats)
+                                     const std::string& stat_prefix, Stats::Scope& stats)
     : runtime_(runtime), stats_(generateStats(stat_prefix, stats)) {
 
-  json_config.validateSchema(Json::Schema::POLICY_ENFORCEMENT_HTTP_FILTER_SCHEMA);
 
   const Json::ObjectSharedPtr config_abort = json_config.getObject("abort", true);
 
@@ -45,28 +44,25 @@ PolicyEnforcementFilterConfig::PolicyEnforcementFilterConfig(const Json::Object&
 
 }
 
-PolicyEnforcementFilter::PolicyEnforcementFilter(PolicyEnforcementFilterConfigPtr config) : config_(config) {}
+PolicyEnforcementFilter::PolicyEnforcementFilter(PolicyEncorcementFilterConfigSharedPtr config) : config_(config) {}
 
 PolicyEnforcementFilter::~PolicyEnforcementFilter() {}
 
-// Delays and aborts are independent events. One can inject a delay
-// followed by an abort or inject just a delay or abort. In this callback,
-// if we inject a delay, then we will inject the abort in the delay timer
-// callback.
-FilterHeadersStatus PolicyEnforcementFilter::decodeHeaders(HeaderMap& headers, bool) {
+FilterHeadersStatus PolicyEnforcementFilter::decodeHeaders(HeaderMap&, bool) {
 
 
-  // Check for header matches
-  if (!Router::ConfigUtility::matchHeaders(headers, config_->filterHeaders())) {
-    return FilterHeadersStatus::Continue;
-  }
 
-
-  if (config_->runtime().snapshot().featureEnabled("pe.http.abort.abort_percent",
-                                                   config_->abortPercent())) {
-    abortWithHTTPStatus();
-    return FilterHeadersStatus::StopIteration;
-  }
+//  // Check for header matches
+//  if (!Router::ConfigUtility::matchHeaders(headers, config_->filterHeaders())) {
+//    return FilterHeadersStatus::Continue;
+//  }
+//
+//
+//  if (config_->runtime().snapshot().featureEnabled("pe.http.abort.abort_percent",
+//                                                   config_->abortPercent())) {
+//    abortWithHTTPStatus();
+//    return FilterHeadersStatus::StopIteration;
+//  }
 
   return FilterHeadersStatus::Continue;
 }
@@ -81,9 +77,9 @@ FilterTrailersStatus PolicyEnforcementFilter::decodeTrailers(HeaderMap&) {
   return FilterTrailersStatus::Continue;
 }
 
-PolicyEnforcementFilterStats PolicyEnforcementFilterConfig::generateStats(const std::string& prefix, Stats::Store& store) {
+PolicyEnforcementFilterStats PolicyEnforcementFilterConfig::generateStats(const std::string& prefix, Stats::Scope& scope) {
   std::string final_prefix = prefix + "pe.";
-  return {ALL_PE_FILTER_STATS(POOL_COUNTER_PREFIX(store, final_prefix))};
+  return {ALL_PE_FILTER_STATS(POOL_COUNTER_PREFIX(scope, final_prefix))};
 }
 
 void PolicyEnforcementFilter::onDestroy() { }
