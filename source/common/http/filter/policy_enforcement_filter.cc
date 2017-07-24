@@ -17,30 +17,17 @@
 #include "common/http/headers.h"
 #include "common/json/config_schemas.h"
 #include "common/router/config_impl.h"
+#include "common/common/enum_to_int.h"
+
+#include "spdlog/spdlog.h"
 
 namespace Envoy {
 namespace Http {
 
-PolicyEnforcementFilterConfig::PolicyEnforcementFilterConfig(const Json::Object& json_config, Runtime::Loader& runtime,
+PolicyEnforcementFilterConfig::PolicyEnforcementFilterConfig(const Json::Object&, Runtime::Loader& runtime,
                                      const std::string& stat_prefix, Stats::Scope& stats)
     : runtime_(runtime), stats_(generateStats(stat_prefix, stats)) {
 
-
-  const Json::ObjectSharedPtr config_abort = json_config.getObject("abort", true);
-
-
-  if (!config_abort->empty()) {
-
-    // TODO(mattklein123): Throw error if invalid return code is provided
-    http_status_ = static_cast<uint64_t>(config_abort->getInteger("http_status"));
-  }
-
-  if (json_config.hasObject("headers")) {
-    std::vector<Json::ObjectSharedPtr> config_headers = json_config.getObjectArray("headers");
-    for (const Json::ObjectSharedPtr& header_map : config_headers) {
-      pe_filter_headers_.push_back(*header_map);
-    }
-  }
 
 }
 
@@ -48,21 +35,16 @@ PolicyEnforcementFilter::PolicyEnforcementFilter(PolicyEncorcementFilterConfigSh
 
 PolicyEnforcementFilter::~PolicyEnforcementFilter() {}
 
-FilterHeadersStatus PolicyEnforcementFilter::decodeHeaders(HeaderMap&, bool) {
+FilterHeadersStatus PolicyEnforcementFilter::decodeHeaders(HeaderMap& headers, bool) {
 
+  // check for Authorization header
+  const Http::HeaderEntry* auth_header = headers.get(Http::LowerCaseString("Authorization"));
+  if (auth_header == nullptr) {
+//    ENVOY_LOG(warn, "Aborting request");
+    abortWithHTTPStatus();
+    return FilterHeadersStatus::StopIteration;
+  }
 
-
-//  // Check for header matches
-//  if (!Router::ConfigUtility::matchHeaders(headers, config_->filterHeaders())) {
-//    return FilterHeadersStatus::Continue;
-//  }
-//
-//
-//  if (config_->runtime().snapshot().featureEnabled("pe.http.abort.abort_percent",
-//                                                   config_->abortPercent())) {
-//    abortWithHTTPStatus();
-//    return FilterHeadersStatus::StopIteration;
-//  }
 
   return FilterHeadersStatus::Continue;
 }
@@ -86,10 +68,8 @@ void PolicyEnforcementFilter::onDestroy() { }
 
 
 void PolicyEnforcementFilter::abortWithHTTPStatus() {
-  // TODO(mattklein123): check http status codes obtained from runtime
   Http::HeaderMapPtr response_headers{new HeaderMapImpl{
-      {Headers::get().Status, std::to_string(config_->runtime().snapshot().getInteger(
-                                  "pe.http.abort.http_status", config_->abortCode()))}}};
+          {Headers::get().Status, std::to_string(enumToInt(Http::Code::Forbidden))}}};
   callbacks_->encodeHeaders(std::move(response_headers), true);
   config_->stats().aborts_injected_.inc();
   callbacks_->requestInfo().setResponseFlag(Http::AccessLog::ResponseFlag::FaultInjected);

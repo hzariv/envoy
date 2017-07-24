@@ -8,7 +8,7 @@
 #include "envoy/http/filter.h"
 #include "envoy/runtime/runtime.h"
 #include "envoy/stats/stats_macros.h"
-
+#include "common/common/logger.h"
 #include "common/router/config_impl.h"
 
 namespace Envoy {
